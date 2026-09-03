@@ -10,6 +10,17 @@ async function api(path, options = {}) {
   return body;
 }
 
+export async function checkHealth() {
+  try {
+    const response = await fetch(`${API_URL}/api/health`);
+    if (!response.ok) return false;
+    const body = await response.json();
+    return body.ok === true;
+  } catch {
+    return false;
+  }
+}
+
 export function login(credentials) {
   return api("/api/login", { method: "POST", body: JSON.stringify(credentials) });
 }
