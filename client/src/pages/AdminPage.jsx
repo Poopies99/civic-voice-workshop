@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getFeedback } from "../api";
+import { maskIdentifier } from "../lib/maskIdentifier";
 import { filterFeedback } from "./feedbackSearch";
 
 export function AdminPage({ user }) {
@@ -35,7 +36,7 @@ export function AdminPage({ user }) {
         {filteredFeedback.map((item) => (
           <article className="feedback-row" key={item.id}>
             <div>
-              <div className="feedback-meta">{item.name} · {new Date(item.createdAt).toLocaleDateString()} · {item.category}</div>
+              <div className="feedback-meta">{item.name} · {maskIdentifier(item.nric)} · {new Date(item.createdAt).toLocaleDateString()} · {item.category}</div>
               <p>{item.message}</p>
             </div>
             <span className="status-pill">{item.status}</span>
