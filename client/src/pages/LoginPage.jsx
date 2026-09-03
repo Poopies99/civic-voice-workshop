@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { checkHealth, login } from "../api";
+import { isWorkshopId, normalizeWorkshopId } from "../validation";
 
 const HEALTH_CHECK_INTERVAL_MS = 5_000;
 
@@ -29,10 +30,17 @@ export function LoginPage({ onLogin }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
+    const normalizedNric = normalizeWorkshopId(nric);
+
+    if (!isWorkshopId(normalizedNric)) {
+      setError("Enter a valid workshop ID, for example S0000001A.");
+      return;
+    }
+
     setBusy(true);
     setError("");
     try {
-      const session = await login({ nric, password, role });
+      const session = await login({ nric: normalizedNric, password, role });
       onLogin(session);
     } catch (requestError) {
       setError(requestError.message);
