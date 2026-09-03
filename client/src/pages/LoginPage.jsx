@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { login } from "../api";
+import { useEffect, useState } from "react";
+import { checkHealth, login } from "../api";
+
+const HEALTH_CHECK_INTERVAL_MS = 5_000;
 
 export function LoginPage({ onLogin }) {
   const [role, setRole] = useState("citizen");
@@ -7,6 +9,23 @@ export function LoginPage({ onLogin }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [apiReachable, setApiReachable] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function updateHealth() {
+      const reachable = await checkHealth();
+      if (mounted) setApiReachable(reachable);
+    }
+
+    updateHealth();
+    const interval = window.setInterval(updateHealth, HEALTH_CHECK_INTERVAL_MS);
+    return () => {
+      mounted = false;
+      window.clearInterval(interval);
+    };
+  }, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -38,6 +57,16 @@ export function LoginPage({ onLogin }) {
           <div className="eyebrow">Secure sign in</div>
           <h2>Welcome to CivicVoice</h2>
           <p className="muted">Use your NRIC and password to continue.</p>
+          <p
+            className={`api-status ${apiReachable === true ? "api-status-online" : apiReachable === false ? "api-status-offline" : "api-status-checking"}`}
+            role="status"
+            aria-live="polite"
+          >
+            <span aria-hidden="true" className="api-status-dot" />
+            {apiReachable === true && "Local API is available"}
+            {apiReachable === false && "Local API is unavailable — retrying automatically"}
+            {apiReachable === null && "Checking local API…"}
+          </p>
           <div className="role-switch" role="tablist" aria-label="Sign-in mode">
             <button className={role === "citizen" ? "active" : ""} onClick={() => setRole("citizen")} type="button">Public</button>
             <button className={role === "admin" ? "active" : ""} onClick={() => setRole("admin")} type="button">Admin</button>
