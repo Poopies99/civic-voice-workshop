@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import express from "express";
 import cors from "cors";
 import { createDb } from "./lib/db.js";
+import { normalizeFeedback } from "./lib/feedback.js";
 
 export async function createApp(options = {}) {
   const db = options.db ?? (await createDb());
@@ -34,9 +35,11 @@ export async function createApp(options = {}) {
 
   app.post("/api/feedback", async (req, res) => {
     const { nric, name, message } = req.body ?? {};
-    if (!message) return res.status(400).json({ error: "Please enter feedback." });
+    if (typeof message !== "string") return res.status(400).json({ error: "Please enter feedback." });
+    const normalizedMessage = normalizeFeedback(message);
+    if (!normalizedMessage) return res.status(400).json({ error: "Please enter feedback." });
     const feedback = {
-      id: crypto.randomUUID(), nric, name, message, category: "General", status: "New",
+      id: crypto.randomUUID(), nric, name, message: normalizedMessage, category: "General", status: "New",
       createdAt: new Date().toISOString(),
     };
     db.data.feedback.unshift(feedback);

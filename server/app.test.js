@@ -44,6 +44,20 @@ describe("CivicVoice baseline API", () => {
     expect(response.body.feedback.message).toBe("Please add more benches.");
   });
 
+  it("removes unsafe markup from feedback before saving it", async () => {
+    const app = await testApp();
+    const response = await request(app).post("/api/feedback").send({
+      nric: "S0000001A",
+      name: "Aisha Rahman",
+      message: '<script>alert("unsafe")</script><img src=x onerror=alert(1)>Please add more benches.',
+    });
+
+    expect(response.status).toBe(201);
+    expect(response.body.feedback.message).toBe("Please add more benches.");
+    const inbox = await request(app).get("/api/feedback").set("x-user-role", "admin");
+    expect(inbox.body.feedback[0].message).toBe("Please add more benches.");
+  });
+
   it("blocks the feedback list without the admin role header", async () => {
     const app = await testApp();
     const response = await request(app).get("/api/feedback");

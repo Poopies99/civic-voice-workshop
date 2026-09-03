@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { getFeedback } from "../api";
 import { filterFeedback } from "./feedbackSearch";
 
+export function FeedbackMessage({ message }) {
+  return <p>{String(message)}</p>;
+}
+
 export function AdminPage({ user }) {
   const [feedback, setFeedback] = useState([]);
   const [error, setError] = useState("");
@@ -36,7 +40,7 @@ export function AdminPage({ user }) {
           <article className="feedback-row" key={item.id}>
             <div>
               <div className="feedback-meta">{item.name} · {new Date(item.createdAt).toLocaleDateString()}</div>
-              <p>{item.message}</p>
+              <FeedbackMessage message={item.message} />
             </div>
             <span className="status-pill">{item.status}</span>
           </article>
