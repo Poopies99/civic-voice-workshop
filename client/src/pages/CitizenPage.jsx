@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { submitFeedback } from "../api";
 
+const feedbackCategories = ["Estate", "Transport", "Environment", "Other"];
+
 export function CitizenPage({ user }) {
   const [message, setMessage] = useState("");
+  const [category, setCategory] = useState("Estate");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
@@ -10,7 +13,7 @@ export function CitizenPage({ user }) {
     event.preventDefault();
     setError("");
     try {
-      await submitFeedback({ nric: user.nric, name: user.name, message });
+      await submitFeedback({ nric: user.nric, name: user.name, message, category });
       setSubmitted(true);
       setMessage("");
     } catch (requestError) {
@@ -28,6 +31,11 @@ export function CitizenPage({ user }) {
       <section className="form-card">
         {submitted && <div className="success-banner">Thank you. Your feedback has been received.</div>}
         <form onSubmit={handleSubmit}>
+          <label>Feedback category
+            <select value={category} onChange={(event) => setCategory(event.target.value)}>
+              {feedbackCategories.map((option) => <option key={option} value={option}>{option}</option>)}
+            </select>
+          </label>
           <label>Your feedback
             <textarea rows="7" value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Share your feedback here..." />
           </label>
