@@ -28,6 +28,13 @@ describe("CivicVoice baseline API", () => {
     expect(response.body.user.role).toBe("citizen");
   });
 
+  it("reports that the local API is healthy", async () => {
+    const app = await testApp();
+    const response = await request(app).get("/api/health");
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ok: true, service: "civic-voice-api" });
+  });
+
   it("accepts feedback", async () => {
     const app = await testApp();
     const response = await request(app).post("/api/feedback").send({
