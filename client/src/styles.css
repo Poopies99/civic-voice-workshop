@@ -59,6 +59,7 @@ textarea { resize: vertical; line-height: 1.6; }
 .search-field { margin: 20px 0 4px; }
 .empty-state { margin: 24px 0 0; color: var(--muted); line-height: 1.55; }
 .feedback-row { display: flex; justify-content: space-between; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--subtle-border); }
+.feedback-row > div { min-width: 0; overflow-wrap: anywhere; }
 .feedback-row:last-child { border-bottom: 0; padding-bottom: 0; }
 .feedback-row p { margin: 8px 0 0; line-height: 1.55; }
 .feedback-meta { color: var(--muted); font-size: 13px; }
@@ -72,4 +73,10 @@ textarea { resize: vertical; line-height: 1.6; }
   .signed-in { display: none; }
   .form-footer { align-items: stretch; flex-direction: column; }
   .form-footer .primary-button { width: 100%; }
+  .page-shell { padding: 48px 16px; }
+  .page-heading { margin-bottom: 28px; }
+  .form-card, .feedback-list { padding: 18px; }
+  .feedback-row { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .feedback-row > div { width: 100%; }
+  .status-pill { align-self: flex-start; }
 }
