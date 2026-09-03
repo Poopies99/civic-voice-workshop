@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getFeedback } from "../api";
+import { sortFeedbackNewestFirst } from "../feedback";
 import { maskIdentifier } from "../lib/maskIdentifier";
 import { filterFeedback } from "./feedbackSearch";
 
@@ -11,7 +12,9 @@ export function AdminPage({ user }) {
   const filteredFeedback = filterFeedback(feedback, query);
 
   useEffect(() => {
-    getFeedback(user).then((response) => setFeedback(response.feedback)).catch((requestError) => setError(requestError.message));
+    getFeedback(user)
+      .then((response) => setFeedback(sortFeedbackNewestFirst(response.feedback)))
+      .catch((requestError) => setError(requestError.message));
   }, [user]);
 
   return (
