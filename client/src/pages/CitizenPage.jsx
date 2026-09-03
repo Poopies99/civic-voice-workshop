@@ -1,27 +1,37 @@
 import { useState } from "react";
 import { submitFeedback } from "../api";
-import { limitFeedback, MAX_FEEDBACK_LENGTH } from "../feedback";
+import {
+  createFeedbackFormState,
+  createSubmittedFeedbackState,
+  limitFeedback,
+  MAX_FEEDBACK_LENGTH,
+} from "../feedback";
 
 export function CitizenPage({ user }) {
-  const [message, setMessage] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
+  const [formState, setFormState] = useState(createFeedbackFormState);
+  const { message, submitted, error } = formState;
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setError("");
+    setFormState((current) => ({ ...current, error: "" }));
     if (message.length > MAX_FEEDBACK_LENGTH) {
-      setError(`Feedback must be ${MAX_FEEDBACK_LENGTH} characters or fewer.`);
+      setFormState((current) => ({
+        ...current,
+        error: `Feedback must be ${MAX_FEEDBACK_LENGTH} characters or fewer.`,
+      }));
       return;
     }
 
     try {
       await submitFeedback({ nric: user.nric, name: user.name, message });
-      setSubmitted(true);
-      setMessage("");
+      setFormState(createSubmittedFeedbackState());
     } catch (requestError) {
-      setError(requestError.message);
+      setFormState((current) => ({ ...current, error: requestError.message }));
     }
+  }
+
+  function handleSubmitAnother() {
+    setFormState(createFeedbackFormState());
   }
 
   return (
@@ -32,14 +42,23 @@ export function CitizenPage({ user }) {
         <p>Tell us about an issue, an idea, or a positive experience in your community.</p>
       </div>
       <section className="form-card">
-        {submitted && <div className="success-banner">Thank you. Your feedback has been received.</div>}
-        <form onSubmit={handleSubmit}>
+        {submitted ? (
+          <div className="submission-confirmation">
+            <div className="success-banner">Thank you. Your feedback has been received.</div>
+            <button className="primary-button" type="button" onClick={handleSubmitAnother}>
+              Submit another response
+            </button>
+          </div>
+        ) : <form onSubmit={handleSubmit}>
           <label>Your feedback
             <textarea
               rows="7"
               value={message}
               maxLength={MAX_FEEDBACK_LENGTH}
-              onChange={(event) => setMessage(limitFeedback(event.target.value))}
+              onChange={(event) => setFormState((current) => ({
+                ...current,
+                message: limitFeedback(event.target.value),
+              }))}
               placeholder="Share your feedback here..."
             />
           </label>
@@ -49,7 +68,7 @@ export function CitizenPage({ user }) {
             <button className="primary-button" disabled={message.length > MAX_FEEDBACK_LENGTH}>Submit feedback</button>
           </div>
           {error && <p className="error-message">{error}</p>}
-        </form>
+        </form>}
       </section>
     </main>
   );
