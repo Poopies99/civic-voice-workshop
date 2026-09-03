@@ -28,6 +28,29 @@ describe("CivicVoice baseline API", () => {
     expect(response.body.user.role).toBe("citizen");
   });
 
+  it("rate-limits repeated failed sign-ins without blocking a correct sign-in", async () => {
+    const app = await testApp();
+    const failedCredentials = {
+      nric: "S0000001A", password: "wrong-password", role: "citizen",
+    };
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const response = await request(app).post("/api/login").send(failedCredentials);
+      expect(response.status).toBe(401);
+    }
+
+    const limited = await request(app).post("/api/login").send(failedCredentials);
+    expect(limited.status).toBe(429);
+    expect(limited.headers["retry-after"]).toBeDefined();
+    expect(limited.body.error).toMatch(/Too many unsuccessful sign-in attempts/i);
+
+    const successful = await request(app).post("/api/login").send({
+      nric: "S0000001A", password: "citizen123", role: "citizen",
+    });
+    expect(successful.status).toBe(200);
+    expect(successful.body.user.role).toBe("citizen");
+  });
+
   it("accepts feedback", async () => {
     const app = await testApp();
     const response = await request(app).post("/api/feedback").send({
