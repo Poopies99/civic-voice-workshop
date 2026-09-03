@@ -35,13 +35,28 @@ describe("CivicVoice baseline API", () => {
     expect(response.body).toEqual({ ok: true, service: "civic-voice-api" });
   });
 
-  it("accepts feedback", async () => {
+  it("accepts and stores feedback with a valid category", async () => {
     const app = await testApp();
     const response = await request(app).post("/api/feedback").send({
-      nric: "S0000001A", name: "Aisha Rahman", message: "Please add more benches.",
+      nric: "S0000001A", name: "Aisha Rahman", message: "Please add more benches.", category: "Transport",
     });
     expect(response.status).toBe(201);
     expect(response.body.feedback.message).toBe("Please add more benches.");
+    expect(response.body.feedback.category).toBe("Transport");
+
+    const inbox = await request(app).get("/api/feedback").set("x-user-role", "admin");
+    expect(inbox.body.feedback[0]).toMatchObject({ id: response.body.feedback.id, category: "Transport" });
+  });
+
+  it("rejects a missing or unsupported feedback category", async () => {
+    const app = await testApp();
+    const feedback = { nric: "S0000001A", name: "Aisha Rahman", message: "Please add more benches." };
+
+    for (const category of [undefined, "General", "Roadworks"]) {
+      const response = await request(app).post("/api/feedback").send({ ...feedback, category });
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe("Please choose a valid feedback category.");
+    }
   });
 
   it("blocks the feedback list without the admin role header", async () => {
